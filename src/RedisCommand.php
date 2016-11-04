@@ -29,15 +29,12 @@ class RedisCommand extends Command
         );
 
         do {
-            var_dump($scanCollection->getScanParameters());
             $scan = call_user_func_array([$redis, 'scan'], $scanCollection->getScanParameters());
             $scanCollection->add($scan[1]);
             $scanCollection->updateCursor($scan[0]);
         } while(!$scanCollection->isTerminated());
 
-        var_dump($scanCollection->getCollection());
-
-        // $fileSystem = new Filesystem;
-        // $fileSystem->dumpFile('test.txt', $scanCollection->dump());
+        $scanAnalyzer = new ScanAnalyzer($redis, $scanCollection);
+        $csv = $scanAnalyzer->dumpCSV();
     }
 }

@@ -65,7 +65,7 @@ class ScanCollection
         return 0 === $this->cursor;
     }
 
-    public function dump()
+    public function dumpCSV()
     {
 
     }
