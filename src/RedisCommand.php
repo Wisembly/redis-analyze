@@ -16,21 +16,28 @@ class RedisCommand extends Command
     {
         $this->setName('redis:analyze');
         $this->setDescription('Analyze Redis depending on inputs.');
-        $this->addOption('key', null, InputOption::VALUE_REQUIRED, 'Analyze this specific key.');
+        $this->addOption('match', null, InputOption::VALUE_REQUIRED, 'Analyze the keys that match the given glob-style pattern.');
+        $this->addOption('count', null, InputOption::VALUE_REQUIRED, 'Handle the number of elements that SCAN provides at every iteration.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $redis = new Redis;
-        $scanCollection = new ScanCollection;
+        $scanCollection = new ScanCollection(
+            $input->getOption('match'),
+            $input->getOption('count')
+        );
 
         do {
-            $scan = $redis->scan($scanCollection->getCursor(), 'COUNT', 1);
+            var_dump($scanCollection->getScanParameters());
+            $scan = call_user_func_array([$redis, 'scan'], $scanCollection->getScanParameters());
             $scanCollection->add($scan[1]);
             $scanCollection->updateCursor($scan[0]);
         } while(!$scanCollection->isTerminated());
 
-        $fileSystem = new Filesystem;
-        $fileSystem->dumpFile('test.txt', $scanCollection->dump());
+        var_dump($scanCollection->getCollection());
+
+        // $fileSystem = new Filesystem;
+        // $fileSystem->dumpFile('test.txt', $scanCollection->dump());
     }
 }

@@ -5,7 +5,30 @@ namespace RedisAnalyze;
 class ScanCollection
 {
     private $cursor = 0;
+    private $count = null;
+    private $match = null;
     private $collection = [];
+
+    public function __construct($match = null, $count = null)
+    {
+        $this->match = $match;
+        $this->count = $count;
+    }
+
+    public function getScanParameters()
+    {
+        $parameters = [$this->cursor];
+
+        if (null !== $this->match) {
+            $parameters = array_merge($parameters, ['MATCH', $this->match]);
+        }
+
+        if (null !== $this->count) {
+            $parameters = array_merge($parameters, ['COUNT', (int) $this->count]);
+        }
+
+        return $parameters;
+    }
 
     public function getCursor()
     {
@@ -44,6 +67,6 @@ class ScanCollection
 
     public function dump()
     {
-        return 'foo';
+
     }
 }
