@@ -13,7 +13,17 @@ use Symfony\Component\Stopwatch\Stopwatch;
 use Predis\Client as Redis;
 
 use RedisAnalyze\ScanCollection;
+use RedisAnalyze\Dumper\CSV;
 
+/**
+ * Scan a Redi database using the SCAN command.
+ *
+ * @see http://redis.io/commands/scan
+ *
+ * For a faster scanning, use an appropriate COUNT option.
+ * For example, on a 100k keys database, without COUNT option the scanning takes 2 minutes.
+ * Using a COUNT setted to 1000, it takes 1,5 seconds.
+ */
 class RedisCommand extends Command
 {
     protected function configure()
@@ -22,6 +32,7 @@ class RedisCommand extends Command
         $this->setDescription('Analyze Redis depending on inputs.');
         $this->addOption('match', null, InputOption::VALUE_REQUIRED, 'Analyze the keys that match the given glob-style pattern.');
         $this->addOption('count', null, InputOption::VALUE_REQUIRED, 'Handle the number of elements that SCAN provides at every iteration.');
+        $this->addOption('dump-csv', null, InputOption::VALUE_NONE, 'You can dump as a CSV the scanning keys.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -56,6 +67,11 @@ class RedisCommand extends Command
         $event = $stopwatch->stop('scan');
 
         $io->text(sprintf('<info>%d keys scanned in %d ms.</info>', $scanCollection->count(), $event->getDuration()));
+
+        if (null !== $dumpCSVPath = $input->getOption('dump-csv')) {
+            $csvDumper = new CSV;
+            $csvDumper->dump($scanCollection);
+        }
 
         // $scanAnalyzer = new ScanAnalyzer($redis, $scanCollection);
         // $csv = $scanAnalyzer->dumpCSV();
