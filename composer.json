@@ -2,7 +2,9 @@
     "require": {
         "predis/predis": "^1.1",
         "symfony/console": "^3.1",
-        "symfony/filesystem": "^3.1"
+        "symfony/filesystem": "^3.1",
+        "clue/redis-protocol": "^0.3.0",
+        "symfony/stopwatch": "^3.1"
     },
 
     "config": {

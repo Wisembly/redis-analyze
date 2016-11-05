@@ -45,6 +45,11 @@ class ScanCollection
         return $this->collection;
     }
 
+    public function count()
+    {
+        return count($this->collection);
+    }
+
     public function add($elements)
     {
         if (!is_array($elements)) {
