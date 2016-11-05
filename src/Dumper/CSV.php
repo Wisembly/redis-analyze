@@ -5,13 +5,25 @@ namespace RedisAnalyze\Dumper;
 use Symfony\Component\Filesystem\Filesystem;
 
 use RedisAnalyze\ScanCollection;
+use RedisAnalyze\Analyze;
 
 class CSV
 {
     public function dump($content)
     {
-        if ($content instanceof ScanCollection) {
-            $this->handleScanCollection($content);
+        switch (true) {
+            case $content instanceof ScanCollection:
+                $this->handleScanCollection($content);
+
+                break;
+
+            case $content instanceof Analyze:
+                $this->handleAnalyze($content);
+
+                break;
+
+            default:
+                $this->write($content, 'dump');
         }
     }
 
@@ -23,7 +35,19 @@ class CSV
             $csv .= $key . "\n";
         }
 
+        $this->write($csv, 'keys');
+    }
+
+    private function handleAnalyze(Analyze $analyze)
+    {
+        $csv = "avgSerializedLength,maxSerializedLentgh,minSerializedLength\n";
+        $csv .= $analyze->getAverageSerializedLength() . ',' . $analyze->getMaxSerializedLength() . ',' . $analyze->getMinSerializedLength() . "\n";
+        $this->write($csv, 'analyze');
+    }
+
+    private function write($content, $fileName)
+    {
         $fileSystem = new Filesystem;
-        $fileSystem->dumpFile('keys.csv', $csv);
+        $fileSystem->dumpFile($fileName . '.csv', $content);
     }
 }

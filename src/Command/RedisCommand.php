@@ -13,6 +13,7 @@ use Symfony\Component\Stopwatch\Stopwatch;
 use Predis\Client as Redis;
 
 use RedisAnalyze\ScanCollection;
+use RedisAnalyze\ScanAnalyzer;
 use RedisAnalyze\Dumper\CSV;
 
 /**
@@ -39,9 +40,10 @@ class RedisCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $redis = new Redis;
+        $csvDumper = new CSV;
 
         $matchOption = $input->getOption('match');
-        $countOption = (int) $input->getOption('count');
+        $countOption = $input->getOption('count');
 
         $scanCollection = new ScanCollection($matchOption, $countOption);
 
@@ -68,12 +70,12 @@ class RedisCommand extends Command
 
         $io->text(sprintf('<info>%d keys scanned in %d ms.</info>', $scanCollection->count(), $event->getDuration()));
 
-        if (null !== $dumpCSVPath = $input->getOption('dump-csv')) {
-            $csvDumper = new CSV;
+        if (true === $input->getOption('dump-csv')) {
             $csvDumper->dump($scanCollection);
         }
 
-        // $scanAnalyzer = new ScanAnalyzer($redis, $scanCollection);
-        // $csv = $scanAnalyzer->dumpCSV();
+        $scanAnalyzer = new ScanAnalyzer($redis, $scanCollection);
+        $analyze = $scanAnalyzer->analyze();
+        $csvDumper->dump($analyze);
     }
 }
